@@ -1,6 +1,7 @@
 package org.acme.schooltimetabling;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -8,10 +9,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
-import org.acme.schooltimetabling.domain.Timeslot;
+import org.acme.schooltimetabling.domain.*;
 import org.acme.schooltimetabling.solver.TimeTableConstraintProvider;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -38,7 +36,12 @@ public class TimeTableApp {
                 .withTerminationSpentLimit(Duration.ofSeconds(10)));
 
         // Load the problem
-        TimeTable problem = generateDemoData();
+        TimeTable problem = null;
+        try {
+            problem = generateDemoData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // Solve the problem
         Solver<TimeTable> solver = solverFactory.buildSolver();
@@ -49,7 +52,7 @@ public class TimeTableApp {
     }
 
 
-    public static TimeTable generateDemoData() {
+    public static TimeTable generateDemoData() throws IOException {
         List<Timeslot> timeslotList = new ArrayList<>(10);
         timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
         timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
@@ -68,22 +71,12 @@ public class TimeTableApp {
         roomList.add(new Room("Room B"));
         roomList.add(new Room("Room C"));
 
-        List<Lesson> lessonList = null;
-        try {
-            lessonList = readLessonsFromExcel();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return new TimeTable(timeslotList, roomList, lessonList);
-    }
-
-    private static List<Lesson> readLessonsFromExcel() throws IOException {
-        List<Lesson> lessons = new ArrayList<>();
-        FileInputStream file = new FileInputStream("src\\main\\java\\org\\acme\\schooltimetabling\\lessons.xlsx");
+        List<Lesson> lessonList = new ArrayList<>();
+        FileInputStream file = new FileInputStream("src\\main\\java\\org\\acme\\schooltimetabling\\import.xlsx");
         Workbook workbook = new XSSFWorkbook(file);
-        Sheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> itr = sheet.iterator();    //iterating over Excel file
+        Sheet lessonSheet = workbook.getSheetAt(0);
+        Iterator<Row> itr = lessonSheet.iterator();    //iterating over Excel file
+        itr.next();
         long id = 0;
         while (itr.hasNext()) {
             Row row = itr.next();
@@ -93,13 +86,34 @@ public class TimeTableApp {
             String studentGroup = row.getCell(2).getStringCellValue();
             try{
                 String preferredRoom = row.getCell(3).getStringCellValue();
-                lessons.add(new Lesson(id++, subject, teacher, studentGroup, preferredRoom));
+                lessonList.add(new Lesson(id++, subject, teacher, studentGroup, preferredRoom));
             }
             catch (NullPointerException nullPointerException){
-                lessons.add(new Lesson(id++, subject, teacher, studentGroup));
+                lessonList.add(new Lesson(id++, subject, teacher, studentGroup));
             }
         }
-        return lessons;
+
+
+        List<Teacher> teacherList = new ArrayList<>();
+        Sheet teacherSheet = workbook.getSheetAt(1);
+        Iterator<Row> itrT = teacherSheet.iterator();    //iterating over Excel file
+        itrT.next();
+        while (itrT.hasNext()) {
+            Row row = itrT.next();
+            Iterator<Cell> cellIterator = row.cellIterator();   //iterating over each column
+            String name = row.getCell(0).getStringCellValue();
+            List<Timeslot> available = new ArrayList<>();
+            cellIterator.next();
+            while(cellIterator.hasNext()){
+                Cell cell = cellIterator.next();
+                if(cell.getBooleanCellValue())
+                    available.add(timeslotList.get(cell.getColumnIndex() - 1));
+            }
+            teacherList.add(new Teacher(name, available));
+        }
+        file.close();
+
+        return new TimeTable(timeslotList, roomList, lessonList, teacherList);
     }
 
     private static void printTimetable(TimeTable timeTable) {

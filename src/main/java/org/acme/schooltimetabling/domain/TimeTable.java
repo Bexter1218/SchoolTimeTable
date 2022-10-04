@@ -18,6 +18,8 @@ public class TimeTable {
     @ValueRangeProvider(id = "roomRange")
     @ProblemFactCollectionProperty
     private List<Room> roomList;
+    @ProblemFactCollectionProperty
+    private List<Teacher> teacherList;
     @PlanningEntityCollectionProperty
     private List<Lesson> lessonList;
 
@@ -27,10 +29,11 @@ public class TimeTable {
     public TimeTable() {
     }
 
-    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList, List<Lesson> lessonList) {
+    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList, List<Lesson> lessonList, List<Teacher> teacherList) {
         this.timeslotList = timeslotList;
         this.roomList = roomList;
         this.lessonList = lessonList;
+        this.teacherList = teacherList;
     }
 
     public List<Timeslot> getTimeslotList() {

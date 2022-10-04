@@ -1,11 +1,15 @@
 package org.acme.schooltimetabling.solver;
 
 import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.Teacher;
+import org.acme.schooltimetabling.domain.Timeslot;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
 import org.optaplanner.core.api.score.stream.Joiners;
+
+import static java.lang.System.in;
 
 public class TimeTableConstraintProvider implements ConstraintProvider {
 
@@ -16,8 +20,10 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                 roomConflict(constraintFactory),
                 teacherConflict(constraintFactory),
                 studentGroupConflict(constraintFactory),
+                lessonsInNotTheRightRoom(constraintFactory),
+                teacherNotAvailableConflict(constraintFactory)
                 // Soft constraints are only implemented in the OptaPlanner-quickstarts code
-                lessonsInNotTheRightRoom(constraintFactory)
+
         };
     }
 
@@ -67,8 +73,26 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
         return constraintFactory
                 .forEach(Lesson.class)
                 .filter((lesson) -> (lesson.getPreferredRoom() != null)&&!(lesson.getRoom().toString().equals(lesson.getPreferredRoom())))
-                .penalize(HardSoftScore.ONE_SOFT)
+                .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Room stability");
+    }
+
+    private Constraint teacherNotAvailableConflict(ConstraintFactory constraintFactory){
+        //The teacher is not available during the class
+        return constraintFactory
+                .forEach(Lesson.class)
+                .join(Teacher.class,
+                        Joiners.equal(Lesson::getTeacher, Teacher::getName))
+                .filter((lesson, teacher) -> {
+                    for (Timeslot t : teacher.getAvailable()
+                         ) {
+                        if(lesson.getTimeslot().getStartTime().equals(t.getStartTime()))
+                            return false;
+                    }
+                    return true;
+                })
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Teacher unavailable");
     }
 
 }
