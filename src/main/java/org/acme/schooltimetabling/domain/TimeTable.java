@@ -20,6 +20,10 @@ public class TimeTable {
     private List<Room> roomList;
     @ProblemFactCollectionProperty
     private List<Teacher> teacherList;
+    @ProblemFactCollectionProperty
+    private List<Subject> subjectList;
+    @ProblemFactCollectionProperty
+    private List<StudentGroup> studentGroupList;
     @PlanningEntityCollectionProperty
     private List<Lesson> lessonList;
 
@@ -29,11 +33,13 @@ public class TimeTable {
     public TimeTable() {
     }
 
-    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList, List<Lesson> lessonList, List<Teacher> teacherList) {
+    public TimeTable(List<Timeslot> timeslotList, List<Room> roomList, List<Lesson> lessonList, List<Teacher> teacherList, List<Subject> subjectList, List<StudentGroup> studentGroupList) {
         this.timeslotList = timeslotList;
         this.roomList = roomList;
         this.lessonList = lessonList;
         this.teacherList = teacherList;
+        this.subjectList = subjectList;
+        this.studentGroupList = studentGroupList;
     }
 
     public List<Timeslot> getTimeslotList() {
