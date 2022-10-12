@@ -4,8 +4,11 @@ import org.acme.schooltimetabling.domain.*;
 import org.acme.schooltimetabling.solver.TimeTableConstraintProvider;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.optaplanner.benchmark.api.PlannerBenchmark;
+import org.optaplanner.benchmark.api.PlannerBenchmarkFactory;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.optaplanner.core.config.phase.PhaseConfig;
 import org.optaplanner.core.config.solver.SolverConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +28,7 @@ public class TimeTableApp {
     public static void main(String[] args) {
         SolverFactory<TimeTable> solverFactory = SolverFactory.create(new SolverConfig()
                 .withSolutionClass(TimeTable.class)
-                .withEntityClasses(Lesson.class)
+                .withEntityClasses(Lesson.class, SplitLesson.class)
                 .withConstraintProviderClass(TimeTableConstraintProvider.class)
                 // The solver runs only for 5 seconds on this small dataset.
                 // It's recommended to run for at least 5 minutes ("5m") otherwise.
@@ -38,6 +41,15 @@ public class TimeTableApp {
         } catch (IOException | DataFormatException e) {
             e.printStackTrace();
         }
+
+
+
+
+//        PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfigXmlResource(
+//                "schooltimetabling/solver/timeTableSolverConfig.xml");
+//
+//        PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(problem);
+//        benchmark.benchmarkAndShowReportInBrowser();
 
         // Solve the problem
         Solver<TimeTable> solver = solverFactory.buildSolver();
@@ -195,7 +207,13 @@ public class TimeTableApp {
             String studentGroup = row.getCell(2).getStringCellValue();
             if(notStudentGroup(studentGroup, studentGroupList)) //if the student group is unknown, it could be hard to apply the constraints
                 throw new DataFormatException("\nNincs ilyen osztály!\tÓrák/"+(row.getRowNum()+1)+".sor");
-            lessonList.add(new Lesson(id++, subject, teacher, studentGroup));
+            Cell cell = row.getCell(3);
+            if(cell != null){
+                String teacher2 = cell.getStringCellValue();
+                lessonList.add(new SplitLesson(id++, subject, teacher, teacher2, studentGroup));
+            }
+            else
+                lessonList.add(new Lesson(id++, subject, teacher, studentGroup));
         }
         file.close();
         //creating the new timetable with the given data
@@ -261,7 +279,7 @@ public class TimeTableApp {
                 if(lesson != null){
                     content = lesson.getStudentGroup().substring(0,3) + "\n"
                             + lesson.getSubject().substring(0,2) + "\n"
-                            + lesson.getRoom().toString().charAt(0);
+                            + lesson.getRoom(teacher.getName()).toString().charAt(0);
                     cell.setCellStyle(cs);
                 }
                 cell.setCellValue(content);
@@ -385,7 +403,7 @@ public class TimeTableApp {
 
     private static Lesson findLessonByTimeslotAndTeacher(List<Lesson> lessonList, Timeslot timeslot, Teacher teacher) {
         for(Lesson l : lessonList){
-            if(l.getTimeslot().equals(timeslot) && l.getTeacher().equals(teacher.getName()))
+            if(l.getTimeslot().equals(timeslot) && (l.getTeacher().equals(teacher.getName()) || l.getTeacher2().equals(teacher.getName())))
                 return l;
         }
         return null;

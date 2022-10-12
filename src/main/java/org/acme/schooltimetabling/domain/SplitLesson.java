@@ -17,6 +17,8 @@ public class SplitLesson extends Lesson{
         this.teacher2 = teacher2;
     }
 
+    public SplitLesson() {}
+
     public String getTeacher2() {
         return teacher2;
     }
@@ -29,4 +31,19 @@ public class SplitLesson extends Lesson{
         this.room2 = room;
     }
 
+    public Room getRoom(String teacher){
+        if(teacher.equals(this.getTeacher()))
+            return room;
+        if(teacher.equals(teacher2))
+            return room2;
+        return null;
+    }
+
+    @Override
+    public boolean roomEquals() {
+        if(room2 != null)
+            return room.getName().equals(room2.getName());
+        else
+            return true;
+    }
 }

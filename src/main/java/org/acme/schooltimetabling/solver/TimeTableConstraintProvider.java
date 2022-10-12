@@ -19,7 +19,9 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                 teacherConflict(constraintFactory),
                 studentGroupConflict(constraintFactory),
                 lessonsInNotTheRightRoom(constraintFactory),
-                teacherNotAvailableConflict(constraintFactory)
+                teacherNotAvailableConflict(constraintFactory),
+                splitLessonInTheSameRoomConflict(constraintFactory)
+
                 // Soft constraints are only implemented in the OptaPlanner-quickstarts code
 
         };
@@ -98,6 +100,14 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                 })
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Teacher unavailable");
+    }
+
+    private Constraint splitLessonInTheSameRoomConflict(ConstraintFactory constraintFactory){
+        return constraintFactory
+                .forEach(Lesson.class)
+                .filter(Lesson::roomEquals)
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Split lesson in same room");
     }
 
 }

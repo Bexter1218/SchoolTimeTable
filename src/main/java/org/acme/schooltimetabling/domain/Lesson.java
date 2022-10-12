@@ -42,6 +42,8 @@ public class Lesson {
         return teacher;
     }
 
+    public String getTeacher2() {return "";}
+
     public String getStudentGroup() {
         return studentGroup;
     }
@@ -57,6 +59,11 @@ public class Lesson {
     public Room getRoom() {
         return room;
     }
+    public Room getRoom(String teacher){
+        if(teacher.equals(teacher))
+            return room;
+        return null;
+    }
 
     public void setRoom(Room room) {
         this.room = room;
@@ -66,5 +73,7 @@ public class Lesson {
     public String toString() {
         return subject + "(" + id + ")";
     }
+
+    public boolean roomEquals() {return false;}
 
 }
