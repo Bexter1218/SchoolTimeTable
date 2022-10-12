@@ -1,19 +1,14 @@
 package org.acme.schooltimetabling.domain;
 
-public class Room {
+import java.util.List;
 
-    private String name;
-
-    public Room() {
-    }
-
-    public Room(String name) {
-        this.name = name;
-    }
+public record Room(String name, List<String> teachableHere) {
 
     public String getName() {
         return name;
     }
+
+    public List<String> getTeachable() {return teachableHere;}
 
     @Override
     public String toString() {

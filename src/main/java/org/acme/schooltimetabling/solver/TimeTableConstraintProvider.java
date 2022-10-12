@@ -9,8 +9,6 @@ import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
 import org.optaplanner.core.api.score.stream.Joiners;
 
-import static java.lang.System.in;
-
 public class TimeTableConstraintProvider implements ConstraintProvider {
 
     @Override
@@ -72,10 +70,17 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
         //The lessons must be held in the preferred room
         return constraintFactory
                 .forEach(Lesson.class)
-                .filter((lesson) -> (lesson.getPreferredRoom() != null)&&!(lesson.getRoom().toString().equals(lesson.getPreferredRoom())))
+                .filter((lesson) -> {
+                    for(String s : lesson.getRoom().getTeachable()) {
+                        if(s.equals(lesson.getSubject()))
+                            return false;
+                    }
+                    return true;
+                })
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Room stability");
     }
+
 
     private Constraint teacherNotAvailableConflict(ConstraintFactory constraintFactory){
         //The teacher is not available during the class

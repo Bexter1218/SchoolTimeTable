@@ -13,12 +13,11 @@ public class Lesson {
     private String subject;
     private String teacher;
     private String studentGroup;
-    private String preferredRoom;
 
     @PlanningVariable(valueRangeProviderRefs = "timeslotRange")
-    private Timeslot timeslot;
+    protected Timeslot timeslot;
     @PlanningVariable(valueRangeProviderRefs = "roomRange")
-    private Room room;
+    protected Room room;
 
     public Lesson() {
     }
@@ -30,13 +29,6 @@ public class Lesson {
         this.studentGroup = studentGroup;
     }
 
-    public Lesson(Long id, String subject, String teacher, String studentGroup, String preferredRoom) {
-        this.id = id;
-        this.subject = subject;
-        this.teacher = teacher;
-        this.studentGroup = studentGroup;
-        this.preferredRoom = preferredRoom;
-    }
 
     public Long getId() {
         return id;
@@ -52,10 +44,6 @@ public class Lesson {
 
     public String getStudentGroup() {
         return studentGroup;
-    }
-
-    public String getPreferredRoom(){
-        return preferredRoom;
     }
 
     public Timeslot getTimeslot() {

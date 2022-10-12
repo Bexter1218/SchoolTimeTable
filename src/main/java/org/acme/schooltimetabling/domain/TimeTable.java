@@ -54,6 +54,10 @@ public class TimeTable {
         return lessonList;
     }
 
+    public List<Teacher> getTeacherList() {return teacherList;}
+
+    public List<StudentGroup> getStudentGroupList() {return studentGroupList;}
+
     public HardSoftScore getScore() {
         return score;
     }
