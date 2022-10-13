@@ -26,13 +26,8 @@ public class TimeTableApp {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeTableApp.class);
 
     public static void main(String[] args) {
-        SolverFactory<TimeTable> solverFactory = SolverFactory.create(new SolverConfig()
-                .withSolutionClass(TimeTable.class)
-                .withEntityClasses(Lesson.class, SplitLesson.class)
-                .withConstraintProviderClass(TimeTableConstraintProvider.class)
-                // The solver runs only for 5 seconds on this small dataset.
-                // It's recommended to run for at least 5 minutes ("5m") otherwise.
-                .withTerminationSpentLimit(Duration.ofSeconds(5)));
+
+        SolverFactory<TimeTable> solverFactory = SolverFactory.createFromXmlFile(new File(".//src/main/java/org/acme/schooltimetabling/solver/timeTableSolverConfig.xml"));
 
         // Load the problem
         TimeTable problem = null;
@@ -41,9 +36,6 @@ public class TimeTableApp {
         } catch (IOException | DataFormatException e) {
             e.printStackTrace();
         }
-
-
-
 
 //        PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfigXmlResource(
 //                "schooltimetabling/solver/timeTableSolverConfig.xml");
@@ -118,7 +110,7 @@ public class TimeTableApp {
         //opening the import file
         File currDir = new File(".");
         String path = currDir.getAbsolutePath();
-        String fileLocation = path.substring(0, path.length() - 1) + "import.xlsx";
+        String fileLocation = path.substring(0, path.length() - 1) + "import2.xlsx";
         FileInputStream file = new FileInputStream(fileLocation);
         Workbook workbook = new XSSFWorkbook(file);
 
@@ -207,13 +199,25 @@ public class TimeTableApp {
             String studentGroup = row.getCell(2).getStringCellValue();
             if(notStudentGroup(studentGroup, studentGroupList)) //if the student group is unknown, it could be hard to apply the constraints
                 throw new DataFormatException("\nNincs ilyen osztály!\tÓrák/"+(row.getRowNum()+1)+".sor");
-            Cell cell = row.getCell(3);
-            if(cell != null){
-                String teacher2 = cell.getStringCellValue();
-                lessonList.add(new SplitLesson(id++, subject, teacher, teacher2, studentGroup));
+            Lesson lesson = new Lesson(id++, subject, teacher, studentGroup);
+            Cell teacher2 = row.getCell(3);
+            if(teacher2 != null){
+                String value = teacher2.getStringCellValue();
+                if(notTeacher(value, teacherList))    //if the teacher is unknown, it could be impossible to apply the constraints
+                    throw new DataFormatException("\nNincs ilyen tanár!\tÓrák/"+(row.getRowNum()+1)+".sor");
+                lesson.setTeacher2(value);
             }
-            else
-                lessonList.add(new Lesson(id++, subject, teacher, studentGroup));
+            Cell studentGroup2 = row.getCell(4);
+            if(studentGroup2 != null){
+                String value = studentGroup2.getStringCellValue();
+                if(notStudentGroup(value, studentGroupList)) //if the student group is unknown, it could be hard to apply the constraints
+                    throw new DataFormatException("\nNincs ilyen osztály!\tÓrák/"+(row.getRowNum()+1)+".sor");
+                lesson.setStudentGroup2(value);
+            }
+            Cell pairID = row.getCell(5);
+            if(pairID != null)
+                lesson.setPairingID(pairID.getStringCellValue());
+            lessonList.add(lesson);
         }
         file.close();
         //creating the new timetable with the given data
@@ -277,7 +281,10 @@ public class TimeTableApp {
                 Lesson lesson = findLessonByTimeslotAndTeacher(timeTable.getLessonList(), timeslot, teacher);
                 String content = "";
                 if(lesson != null){
-                    content = lesson.getStudentGroup().substring(0,3) + "\n"
+                    String secondStudentGroupName = lesson.getStudentGroup2();
+                    if(secondStudentGroupName.length() > 3)
+                        secondStudentGroupName = secondStudentGroupName.substring(0,3);
+                    content = lesson.getStudentGroup().substring(0,3) + secondStudentGroupName + "\n"
                             + lesson.getSubject().substring(0,2) + "\n"
                             + lesson.getRoom(teacher.getName()).toString().charAt(0);
                     cell.setCellStyle(cs);
@@ -325,7 +332,7 @@ public class TimeTableApp {
                 String content = "";
                 if(lesson != null)
                 {
-                    content = lesson.getSubject() + "\n" + lesson.getStudentGroup() + "\n" + lesson.getRoom();
+                    content = lesson.getSubject() + "\n" + lesson.getStudentGroup()  + "\n" + lesson.getRoom();
                     cell.setCellStyle(cs);
                 }
                 cell.setCellValue(content);
@@ -410,7 +417,7 @@ public class TimeTableApp {
     }
     private static Lesson findLessonByTimeslotAndStudentGroup(List<Lesson> lessonList, Timeslot timeslot,StudentGroup studentGroup){
         for(Lesson l : lessonList){
-            if(l.getTimeslot().equals(timeslot) && l.getStudentGroup().equals(studentGroup.getName()))
+            if(l.getTimeslot().equals(timeslot) && (l.getStudentGroup().equals(studentGroup.getName()) || l.getStudentGroup2().equals(studentGroup.getName())))
                 return l;
         }
         return null;

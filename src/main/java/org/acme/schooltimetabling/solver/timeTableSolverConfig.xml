@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://www.optaplanner.org/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://www.optaplanner.org/xsd/solver https://www.optaplanner.org/xsd/solver/solver.xsd">
+
+    <!-- Define the model -->
+    <solutionClass>org.acme.schooltimetabling.domain.TimeTable</solutionClass>
+    <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+
+    <!-- Define the score function -->
+    <scoreDirectorFactory>
+        <constraintProviderClass>org.acme.schooltimetabling.solver.TimeTableConstraintProvider</constraintProviderClass>
+    </scoreDirectorFactory>
+
+    <!-- Define time limit -->
+
+
+    <!-- Define solving methods -->
+    <constructionHeuristic>
+        <termination><!-- Solver termination -->
+            <secondsSpentLimit>30</secondsSpentLimit>
+        </termination>
+        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+    </constructionHeuristic>
+    <localSearch>
+        <termination><!-- Solver termination -->
+            <secondsSpentLimit>15</secondsSpentLimit>
+        </termination>
+        <localSearchType>LATE_ACCEPTANCE</localSearchType>
+    </localSearch>
+    <localSearch>
+        <termination><!-- Solver termination -->
+            <secondsSpentLimit>15</secondsSpentLimit>
+        </termination>
+        <localSearchType>TABU_SEARCH</localSearchType>
+    </localSearch>
+</solver>
