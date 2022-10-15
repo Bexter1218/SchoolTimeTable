@@ -17,20 +17,20 @@
     <!-- Define solving methods -->
     <constructionHeuristic>
         <termination><!-- Solver termination -->
-            <secondsSpentLimit>30</secondsSpentLimit>
+            <secondsSpentLimit>60</secondsSpentLimit>
         </termination>
         <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
     </constructionHeuristic>
     <localSearch>
-        <termination><!-- Solver termination -->
-            <secondsSpentLimit>15</secondsSpentLimit>
+        <termination>
+            <unimprovedMinutesSpentLimit>1</unimprovedMinutesSpentLimit>
         </termination>
-        <localSearchType>LATE_ACCEPTANCE</localSearchType>
-    </localSearch>
-    <localSearch>
-        <termination><!-- Solver termination -->
-            <secondsSpentLimit>15</secondsSpentLimit>
-        </termination>
-        <localSearchType>TABU_SEARCH</localSearchType>
+        <acceptor>
+            <entityTabuSize>7</entityTabuSize>
+        </acceptor>
+        <forager>
+            <acceptedCountLimit>100</acceptedCountLimit>
+            <finalistPodiumType>STRATEGIC_OSCILLATION</finalistPodiumType>
+        </forager>
     </localSearch>
 </solver>

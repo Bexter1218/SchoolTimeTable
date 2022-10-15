@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plannerBenchmark xmlns="https://www.optaplanner.org/xsd/benchmark" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://www.optaplanner.org/xsd/benchmark https://www.optaplanner.org/xsd/benchmark/benchmark.xsd">
+    <benchmarkDirectory>local/data/nqueens</benchmarkDirectory>
+
+    <inheritedSolverBenchmark>
+        <solver>
+            <solutionClass>org.acme.schooltimetabling.domain.TimeTable</solutionClass>
+            <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+            <scoreDirectorFactory>
+                <constraintProviderClass>org.acme.schooltimetabling.solver.TimeTableConstraintProvider</constraintProviderClass>
+            </scoreDirectorFactory>
+            <termination><!-- Solver termination -->
+                <secondsSpentLimit>60</secondsSpentLimit>
+            </termination>
+            <constructionHeuristic>
+                <termination><!-- Solver termination -->
+                    <secondsSpentLimit>60</secondsSpentLimit>
+                </termination>
+                <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+            </constructionHeuristic>
+        </solver>
+        <problemBenchmarks>
+            <solutionFileIOClass>org.acme.schooltimetabling.data.TimeTableIO</solutionFileIOClass>
+            <inputSolutionFile>import2.xlsx</inputSolutionFile>
+        </problemBenchmarks>
+    </inheritedSolverBenchmark>
+
+    <solverBenchmark>
+        <name>Tabu Search</name>
+        <solver>
+            <localSearch>
+                <acceptor>
+                    <entityTabuSize>7</entityTabuSize>
+                </acceptor>
+                <forager>
+                    <acceptedCountLimit>100</acceptedCountLimit>
+                </forager>
+            </localSearch>
+        </solver>
+    </solverBenchmark>
+    <solverBenchmark>
+        <name>Tabu 1</name>
+        <solver>
+            <localSearch>
+                <acceptor>
+                    <entityTabuSize>7</entityTabuSize>
+                </acceptor>
+                <forager>
+                    <acceptedCountLimit>100</acceptedCountLimit>
+                    <finalistPodiumType>STRATEGIC_OSCILLATION</finalistPodiumType>
+                </forager>
+            </localSearch>
+        </solver>
+    </solverBenchmark>
+    <solverBenchmark>
+        <name>Tabu 2</name>
+        <solver>
+            <localSearch>
+                <acceptor>
+                    <entityTabuSize>7</entityTabuSize>
+                </acceptor>
+                <forager>
+                    <acceptedCountLimit>1000</acceptedCountLimit>
+                    <finalistPodiumType>STRATEGIC_OSCILLATION</finalistPodiumType>
+                </forager>
+            </localSearch>
+        </solver>
+    </solverBenchmark>
+</plannerBenchmark>
