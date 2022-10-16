@@ -1,13 +1,13 @@
 package org.acme.schooltimetabling.solver;
 
-import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.Teacher;
-import org.acme.schooltimetabling.domain.Timeslot;
+import org.acme.schooltimetabling.domain.*;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
 import org.optaplanner.core.api.score.stream.Joiners;
+
+import java.time.LocalTime;
 
 public class TimeTableConstraintProvider implements ConstraintProvider {
 
@@ -16,11 +16,18 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
                 // Hard constraints
                 roomConflict(constraintFactory),
+                roomConflict2(constraintFactory),
+                roomConflict3(constraintFactory),
                 teacherConflict(constraintFactory),
+                teacherConflict2(constraintFactory),
+                teacherConflict3(constraintFactory),
                 studentGroupConflict(constraintFactory),
+                studentGroupConflict2(constraintFactory),
+                studentGroupConflict3(constraintFactory),
                 lessonsInNotTheRightRoom(constraintFactory),
                 teacherNotAvailableConflict(constraintFactory),
-                splitLessonInTheSameRoomConflict(constraintFactory)
+                teacherTooMuchInSchoolTheSameDay(constraintFactory),
+                studentEmptyLessonConflict(constraintFactory)
 
                 // Soft constraints are only implemented in the OptaPlanner-quickstarts code
 
@@ -43,7 +50,38 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                         Joiners.lessThan(Lesson::getId))
                 // ... then penalize each pair with a hard weight.
                 .penalize(HardSoftScore.ONE_HARD)
-                .asConstraint("Room conflict");
+                .asConstraint("Room conflict 1-1");
+    }
+
+    private Constraint roomConflict2(ConstraintFactory constraintFactory) {
+
+        return constraintFactory
+                .forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTimeslot),
+                        Joiners.lessThan(Lesson::getId))
+                .filter(((lesson, lesson2) -> {
+                    if(lesson.getRoom2() == null || lesson2.getRoom2() == null)
+                        return false;
+                    return lesson.getRoom2().equals(lesson2.getRoom2());
+                }))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Room conflict 2-2");
+    }
+
+    private Constraint roomConflict3(ConstraintFactory constraintFactory) {
+
+        return constraintFactory
+                .forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTimeslot))
+                .filter(((lesson, lesson2) -> {
+                    if(lesson2.getRoom2() == null)
+                        return false;
+                    return lesson.getRoom().equals(lesson2.getRoom2());
+                }))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Room conflict 1-2");
     }
 
     private Constraint teacherConflict(ConstraintFactory constraintFactory) {
@@ -54,7 +92,34 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                         Joiners.equal(Lesson::getTeacher),
                         Joiners.lessThan(Lesson::getId))
                 .penalize(HardSoftScore.ONE_HARD)
-                .asConstraint("Teacher conflict");
+                .asConstraint("Teacher conflict 1-1");
+    }
+
+    private Constraint teacherConflict2(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTimeslot),
+                        Joiners.lessThan(Lesson::getId))
+                .filter(((lesson, lesson2) -> {
+                    if(lesson2.getTeacher2().equals("") || lesson.getTeacher2().equals(""))
+                        return false;
+                    return lesson.getTeacher2().equals(lesson2.getTeacher2());
+                }))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Teacher conflict 2-2");
+    }
+
+    private Constraint teacherConflict3(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTimeslot))
+                .filter(((lesson, lesson2) -> {
+                    if(lesson2.getTeacher2().equals(""))
+                        return false;
+                    return lesson.getTeacher().equals(lesson2.getTeacher2());
+                }))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Teacher conflict 1-2");
     }
 
     private Constraint studentGroupConflict(ConstraintFactory constraintFactory) {
@@ -65,7 +130,36 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                         Joiners.equal(Lesson::getStudentGroup),
                         Joiners.lessThan(Lesson::getId))
                 .penalize(HardSoftScore.ONE_HARD)
-                .asConstraint("Student group conflict");
+                .asConstraint("Student group conflict 1-1");
+    }
+
+    private Constraint studentGroupConflict2(ConstraintFactory constraintFactory) {
+        // A student can attend at most one lesson at the same time.
+        return constraintFactory.forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTimeslot),
+                        Joiners.lessThan(Lesson::getId))
+                .filter(((lesson, lesson2) -> {
+                    if(lesson.getStudentGroup2().equals("") || lesson2.getStudentGroup2().equals(""))
+                        return false;
+                    return lesson.getStudentGroup2().equals(lesson2.getStudentGroup2());
+                }))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Student group conflict 2-2");
+    }
+
+    private Constraint studentGroupConflict3(ConstraintFactory constraintFactory) {
+        // A student can attend at most one lesson at the same time.
+        return constraintFactory.forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTimeslot))
+                .filter(((lesson, lesson2) -> {
+                    if(lesson2.getStudentGroup2().equals(""))
+                        return false;
+                    return lesson.getStudentGroup().equals(lesson2.getStudentGroup2());
+                }))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Student group conflict 1-2");
     }
 
     private Constraint lessonsInNotTheRightRoom(ConstraintFactory constraintFactory){
@@ -102,12 +196,34 @@ public class TimeTableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Teacher unavailable");
     }
 
-    private Constraint splitLessonInTheSameRoomConflict(ConstraintFactory constraintFactory){
+
+    private Constraint teacherTooMuchInSchoolTheSameDay(ConstraintFactory constraintFactory){
         return constraintFactory
                 .forEach(Lesson.class)
-                .filter(Lesson::roomEquals)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getTeacher))
+                .filter(((lesson, lesson2) -> {
+                    return (lesson.getTimeslot().startTime().equals(LocalTime.of(7, 55)) && lesson2.getTimeslot().getStartTime().equals(LocalTime.of(15, 15)));
+                }))
                 .penalize(HardSoftScore.ONE_HARD)
-                .asConstraint("Split lesson in same room");
+                .asConstraint("Too much in school the same day");
+    }
+
+    private Constraint studentEmptyLessonConflict(ConstraintFactory constraintFactory){
+        return constraintFactory
+                .forEach(Lesson.class)
+                .ifNotExists(Lesson.class,
+                        Joiners.equal(Lesson::getDayOfWeek),
+                        Joiners.equal(Lesson::getStudentGroup),
+                        Joiners.filtering((lesson1, lesson2) -> {
+                            if(lesson1.getStudentGroup().equals(lesson2.getStudentGroup()) || lesson1.getStudentGroup().equals(lesson2.getStudentGroup2())
+                            || lesson1.getStudentGroup2().equals(lesson2.getStudentGroup()) || lesson1.getStudentGroup2().equals(lesson2.getStudentGroup2()))
+                                return lesson1.getTimeslot().getStartTime().getHour() - 1 == lesson2.getTimeslot().getStartTime().getHour();
+                            return false;
+                        }))
+                .filter(lesson -> lesson.getTimeslot().startTime().getHour() != 7)
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Empty Lesson for a student group");
     }
 
 }

@@ -258,7 +258,7 @@ public class TimeTableIO implements SolutionFileIO<TimeTable> {
                         secondStudentGroupName = secondStudentGroupName.substring(0,3);
                     content = lesson.getStudentGroup().substring(0,3) + secondStudentGroupName + "\n"
                             + lesson.getSubject().substring(0,2) + "\n"
-                            + lesson.getRoom(teacher.getName()).toString().charAt(0);
+                            + lesson.getRoom(teacher.getName()).toString().substring(0,3);
                     cell.setCellStyle(cs);
                 }
                 cell.setCellValue(content);
@@ -282,7 +282,7 @@ public class TimeTableIO implements SolutionFileIO<TimeTable> {
                 Lesson lesson = findLessonByTimeslotAndStudentGroup(timeTable.getLessonList(), timeslot, studentGroup);
                 String content = "";
                 if(lesson != null)
-                    content = lesson.getSubject();
+                    content = lesson.getSubject() + lesson.getId();
                 cell.setCellValue(content);
             }
 

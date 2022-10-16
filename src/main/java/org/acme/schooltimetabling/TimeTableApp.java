@@ -8,6 +8,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.optaplanner.benchmark.api.PlannerBenchmark;
 import org.optaplanner.benchmark.api.PlannerBenchmarkFactory;
+import org.optaplanner.core.api.score.ScoreExplanation;
+import org.optaplanner.core.api.score.ScoreManager;
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.config.phase.PhaseConfig;
@@ -17,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.sql.Time;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -38,17 +42,22 @@ public class TimeTableApp {
         problem = io.read(new File(".//import2.xlsx"));
 
 
-       PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlFile(
-               new File(".//src/main/java/org/acme/schooltimetabling/solver/TabuBenchmarkConfig.xml"));
-
-        PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(problem);
-        benchmark.benchmarkAndShowReportInBrowser();
-
-
-//        Solver<TimeTable> solver = solverFactory.buildSolver();
-//        TimeTable solution = solver.solve(problem);
+//       PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlFile(
+//               new File(".//src/main/java/org/acme/schooltimetabling/solver/TabuBenchmarkConfig.xml"));
 //
-//        io.write(solution, new File(".//output.xlsx"));
+//        PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(problem);
+//        benchmark.benchmarkAndShowReportInBrowser();
+
+
+        Solver<TimeTable> solver = solverFactory.buildSolver();
+        TimeTable solution = solver.solve(problem);
+
+        ScoreManager<TimeTable, HardSoftScore> scoreManager = ScoreManager.create(solverFactory);
+        ScoreExplanation<TimeTable, HardSoftScore> scoreExplanation = scoreManager.explainScore(solution);
+
+        System.out.println(scoreManager.getSummary(solution));
+
+        io.write(solution, new File(".//output.xlsx"));
     }
 
 

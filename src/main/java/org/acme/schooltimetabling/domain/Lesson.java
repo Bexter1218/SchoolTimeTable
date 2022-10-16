@@ -113,6 +113,10 @@ public class Lesson {
         this.room2 = room;
     }
 
+    public String getDayOfWeek(){
+        return getTimeslot().getDayOfWeek().toString();
+    }
+
 
 
 

@@ -44,4 +44,6 @@ public record Timeslot(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTi
         return day + "/" + number;
     }
 
+
+
 }
