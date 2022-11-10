@@ -81,15 +81,14 @@ public class TimeTableIO implements SolutionFileIO<TimeTable> {
             Workbook workbook = null;
             try {
                 workbook = new XSSFWorkbook(file);
-            } catch (InvalidFormatException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (InvalidFormatException | IOException e) {
                 e.printStackTrace();
             }
 
-            //importing the subjects
+        //importing the subjects
             List<Subject> subjectList = new ArrayList<>();
-            Sheet subjectSheet = workbook.getSheetAt(0);
+        assert workbook != null;
+        Sheet subjectSheet = workbook.getSheetAt(0);
             Iterator<Row> itrS = subjectSheet.iterator();
             itrS.next();   //skipping one header row
             while (itrS.hasNext()){

@@ -10,13 +10,7 @@
             <scoreDirectorFactory>
                 <constraintProviderClass>org.acme.schooltimetabling.solver.TimeTableConstraintProvider</constraintProviderClass>
             </scoreDirectorFactory>
-            <termination><!-- Solver termination -->
-                <secondsSpentLimit>60</secondsSpentLimit>
-            </termination>
             <constructionHeuristic>
-                <termination><!-- Solver termination -->
-                    <secondsSpentLimit>60</secondsSpentLimit>
-                </termination>
                 <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
             </constructionHeuristic>
         </solver>
@@ -30,11 +24,16 @@
         <name>Tabu Search</name>
         <solver>
             <localSearch>
+                <termination>
+                    <minutesSpentLimit>
+                        2
+                    </minutesSpentLimit>
+                </termination>
                 <acceptor>
                     <entityTabuSize>7</entityTabuSize>
                 </acceptor>
                 <forager>
-                    <acceptedCountLimit>100</acceptedCountLimit>
+                    <acceptedCountLimit>1000</acceptedCountLimit>
                 </forager>
             </localSearch>
         </solver>
@@ -43,26 +42,16 @@
         <name>Tabu 1</name>
         <solver>
             <localSearch>
+                <termination>
+                    <minutesSpentLimit>
+                        2
+                    </minutesSpentLimit>
+                </termination>
                 <acceptor>
                     <entityTabuSize>7</entityTabuSize>
                 </acceptor>
                 <forager>
-                    <acceptedCountLimit>100</acceptedCountLimit>
-                    <finalistPodiumType>STRATEGIC_OSCILLATION</finalistPodiumType>
-                </forager>
-            </localSearch>
-        </solver>
-    </solverBenchmark>
-    <solverBenchmark>
-        <name>Tabu 2</name>
-        <solver>
-            <localSearch>
-                <acceptor>
-                    <entityTabuSize>7</entityTabuSize>
-                </acceptor>
-                <forager>
-                    <acceptedCountLimit>1000</acceptedCountLimit>
-                    <finalistPodiumType>STRATEGIC_OSCILLATION</finalistPodiumType>
+                    <acceptedCountLimit>2000</acceptedCountLimit>
                 </forager>
             </localSearch>
         </solver>
